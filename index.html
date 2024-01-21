@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repositories</title>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<style>
+    /* Add your custom styles here */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #323946; /* Light gray-blue background */
+    color: #ffffff; /* Dark gray text */
+}
+.container {
+    max-width: 90%;
+    margin: 0 auto;
+    background-color: #323946; /* White background */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px #FC0FC0;
+    margin-top: 50px;
+}
+#usertitle {
+        display: none; /* Initially hide the usertitle div */
+        color: #fff; /* White text */
+        margin-top: 20px;
+    }
+
+    #repotitle {
+        display: none; /* Initially hide the usertitle div */
+        color: #fff; /* White text */
+        margin-top: 20px;
+    }
+
+.btn-primary {
+    background-color: 	#FC0FC0; /* Primary blue */
+    border-color: #feffff;
+    color :#fff; /* White text */
+}
+
+.btn-primary:hover {
+    background-color: #fff; /* Slightly darker blue on hover */
+    border-color: #FC0FC0;
+    color: #FC0FC0;
+    transition: 1s;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.card {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+    background-color: #ffffff; /* White background */
+    color: #333; /* Dark gray text */
+}
+
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px #0ef;
+
+}
+
+.card-title {
+    font-size: 1.4rem;
+    color: #343a40; /* Dark gray */
+    margin-bottom: 10px;
+}
+
+.card-text {
+    color: #6c757d; /* Gray */
+}
+
+.spinner-border {
+    color:#FC0FC0; /* Primary blue */
+}
+
+#pagination button {
+    margin: 0 3px;
+}
+
+
+
+/* User Details Styling */
+#user-details {
+
+    text-align: center;
+    width: 100%;
+}
+
+
+#user-details img {
+
+    border-radius: 50%;
+    max-width: 100px;
+    margin-bottom: 1px;
+    border: 3px solid #FC0FC0;
+}
+#pfp{
+    margin-top: 10px;
+}
+.rt{
+    margin:4px 4px;
+    font-size: x-small;
+    background-color: #007bff;
+}
+.rt:hover{
+    
+    background-color: #ffffff;
+    color: #007bff;
+    border:1px solid #007bff;
+}
+.vishal:hover{
+    background-color: #FC0FC0;
+    border-radius: 50%;
+}
+#Title{
+    text-align: center;
+    font-weight: 700;
+    color: #191117;
+    position: relative;
+    animation: glow 1.5s infinite alternate;
+}
+@keyframes glow {
+            0% {
+                text-shadow: 0 0 5px #FC0FC0, 0 0 10px #FC0FC0, 0 0 15px #FC0FC0;
+            }
+            100% {
+                text-shadow: 0 0 10px #FC0FC0, 0 0 20px #FC0FC0, 0 0 30px #FC0FC0;
+            }
+        }
+
+ #repositories-list{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+
+ }
+ @media only screen and (max-width: 700px) {
+    #repositories-list{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+
+ }
+}
+ .next{
+    background-color: #FC0FC0;
+ }
+ .prev{
+    background-color: #FC0FC0;
+ }
+
+ #usertitle{
+    color: #ffffff;
+    
+ }
+ #repotitle{
+    color: #ffffff;
+    font-size: 2rem;
+ }
+
+
+
+
+
+
+</style>
+<body>
+    <div class="container mt-5">
+        <h1 id ="Title" class="mb-4">GitHub Repositories</h1>
+        <div class="form-group">
+            <label for="username">GitHub Username :</label>
+            <input type="text" class="form-control" id="username" placeholder="Enter GitHub username">
+        </div>
+        <button class="btn btn-primary mt-3" onclick="fetchRepositories()">Fetch Repositories</button>
+
+        <div id="usertitle" class="outofcard">
+            <h2>USER PROFILE</h2>
+            <!-- Add any content you want to display in usertitle here -->
+        </div>
+        
+
+        <!-- User Details Container -->
+        <div id="user-details" class="mt-4"></div>
+
+        <div id="repotitle" class="outofcard">
+            <h2 id="repotitle" class="text-light">Total Repositories : 0</h2>
+
+            <!-- Add any content you want to display in usertitle here -->
+        </div>
+
+        <!-- Repositories List Container -->
+        <div id="repositories-list" class="mt-4">
+            <!-- Repository cards will be dynamically added here -->
+        </div>
+
+        <!-- Pagination Container -->
+        <div id="pagination" class="mt-4">
+            <!-- Pagination buttons will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const perPageOptions = [10, 30, 50, 100];
+let repositoriesPerPage = 10;
+let no_rep;
+function fetchUserDetails(username) {
+    const userUrl = `https://api.github.com/users/${username}`;
+
+    fetch(userUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(user => {
+            no_rep=user.public_repos;
+            console.log(no_rep)
+            const repoTitle = document.getElementById('repotitle');
+            repoTitle.textContent = `TOTAL REPOSITORIES : ${no_rep}`;
+
+            displayUserDetails(user);
+        })
+        .catch(error => {
+            console.error('Error fetching user details:', error);
+        });
+}
+
+function displayUserDetails(user) {
+    const userDetails = document.getElementById('user-details');
+    userDetails.innerHTML = '';
+
+    const avatarUrl = user.avatar_url;
+    const bio = user.bio || 'No bio available';
+
+    const userCard = document.createElement('div');
+    userCard.classList.add('card', 'mt-4');
+
+    userCard.innerHTML = `
+        
+        <div id="pfp">
+        <img src="${avatarUrl}" class="card-img-top" alt="User Avatar">
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">${user.login}</h5>
+            <p class="card-text">${bio}</p>
+            <a href="${user.html_url}" class="btn btn-primary" target="_blank">View Profile on GitHub</a>
+        </div>
+    `;
+
+    userDetails.appendChild(userCard);
+}
+
+function fetchRepositories(currentPage=1) {
+    const username = document.getElementById('username').value;
+
+    if (!username) {
+        alert('Please enter a GitHub username.');
+        return;
+    }
+    fetchUserDetails(username)
+    const apiUrl = `https://api.github.com/users/${username}/repos?page=${currentPage}&per_page=${repositoriesPerPage}`;
+
+    const repositoriesList = document.getElementById('repositories-list');
+    repositoriesList.innerHTML = ''; // Clear previous results
+
+    // Show loader while API call is in progress
+    repositoriesList.innerHTML = '<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>';
+    
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            console.log(response)
+            return response.json();
+
+        })
+
+        .then(repositories => {
+            // Remove loader
+            repositoriesList.innerHTML = '';
+            // console.log(repositories)
+            
+            // Display repositories
+            repositories.forEach(repo => {
+                const card = document.createElement('div');
+                card.classList.add('card', 'mt-3');
+                const language = document.createElement('div');
+                
+                fetch(`https://api.github.com/repos/${username}/${repo.name}/languages`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        
+                        Object.keys(data).forEach(tag=>{
+                            const listItem = document.createElement('button');
+                            listItem.classList.add('btn','btn-primary', 'mt-3','rt',);
+                            listItem.textContent=`${tag}`
+                            language.appendChild(listItem);
+                        })
+                    })
+                    card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${repo.name}</h5>
+                        <p class="card-text">${repo.description || 'No description available'}</p>
+                        <a href="${repo.html_url}" class="btn btn-primary" target="_blank">View on GitHub</a>
+                    </div>
+                `;
+                const usertitleDiv = document.getElementById('usertitle');
+                usertitleDiv.style.display = 'block';
+
+                 const repotitleDiv = document.getElementById('repotitle');
+                 repotitleDiv.style.display = 'block';
+                
+                card.appendChild(language);
+                repositoriesList.appendChild(card);
+            });
+
+            // Display pagination
+
+            
+
+            
+            
+            const totalPages = Math.ceil(no_rep / repositoriesPerPage);
+            const pagination = document.getElementById('pagination');
+                pagination.innerHTML = '';
+            console.log(no_rep)
+            if (totalPages > 1) {
+                const prevButton = document.createElement('button');
+            prevButton.classList.add('btn', 'btn-outline-secondary', 'mt-3','prev');
+            prevButton.textContent = 'Previous';
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    changePage(currentPage - 1);
+                }
+            };
+                pagination.appendChild(prevButton);
+                for (let i = 1; i <= totalPages && i<=10; i++) {
+                    const button = document.createElement('button');
+                    button.classList.add('btn', 'btn-outline-secondary', 'mt-3','vishal');
+                    button.textContent = i;
+                    button.onclick = () => changePage(i);
+                    pagination.appendChild(button);
+                    if (i === currentPage) {
+                        button.classList.remove('btn-outline-secondary');
+                        button.classList.remove('mt-3');
+                        button.classList.add('btn-dark');
+                        button.classList.add('mt-3'); // Highlight current page
+                    }
+                }
+                const nextButton = document.createElement('button');
+            nextButton.classList.add('btn', 'btn-outline-secondary', 'mt-3','next');
+            nextButton.textContent = 'Next';
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    changePage(currentPage + 1);
+                }
+            };
+            pagination.appendChild(nextButton);
+        
+            }
+          
+            
+           
+            // Fetch and display user details
+            
+        })
+        .catch(error => {
+            // Remove loader
+            repositoriesList.innerHTML = '';
+
+            // Display error message
+            repositoriesList.innerHTML = `<p class="text-danger">Error fetching repositories: ${error.message}</p>`;
+            console.error('Error fetching repositories:', error);
+
+            const usertitleDiv = document.getElementById('usertitle');
+            usertitleDiv.style.display = 'none';
+
+            const repotitleDiv = document.getElementById('repotitle');
+            repotitleDiv.style.display = 'none';
+        });
+
+        //title
+        
+}
+
+
+function changePage(page) {
+    fetchRepositories(page);
+}
+    </script>
+</body>
+</html>
