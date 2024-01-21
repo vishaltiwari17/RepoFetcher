@@ -10,4 +10,7 @@ This web application allows users to fetch and display GitHub repositories for a
 4. **Pagination**: Implements pagination to navigate through the user's repositories.
 
 ## Assumption
-i have assumed the user can fetch a maximum of 100 repositpries with maximum of 10 repos per page i.e. 10 pages . i can make the project fetch more repos but it will give http error 403
+1.  i have assumed the user can fetch a maximum of 100 repositpries with maximum of 10 repos per page i.e. 10 pages . i can make the project 
+    fetch more repos but it will give http error 403
+
+2.  i have not made separate files for html css and js . but i can do that if you ask for it
